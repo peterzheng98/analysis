@@ -131,6 +131,9 @@
 		<Unit filename="/Users/zhengwenxin/Projects/llvm-patch/analysis/cmake-build-debug/src/CMakeFiles/project-src.dir/RecordEvent.cpp.o">
 			<Option target="analysis"/>
 		</Unit>
+		<Unit filename="/Users/zhengwenxin/Projects/llvm-patch/analysis/cmake-build-debug/src/CMakeFiles/project-src.dir/Utilities.cpp.o">
+			<Option target="analysis"/>
+		</Unit>
 		<Unit filename="/Users/zhengwenxin/Projects/llvm-patch/analysis/main.cpp">
 			<Option target="analysis"/>
 		</Unit>
@@ -141,6 +144,9 @@
 			<Option target="project-src"/>
 		</Unit>
 		<Unit filename="/Users/zhengwenxin/Projects/llvm-patch/analysis/src/RecordEvent.cpp">
+			<Option target="project-src"/>
+		</Unit>
+		<Unit filename="/Users/zhengwenxin/Projects/llvm-patch/analysis/src/Utilities.cpp">
 			<Option target="project-src"/>
 		</Unit>
 		<Unit filename="/Users/zhengwenxin/Projects/llvm-patch/analysis/CMakeLists.txt">

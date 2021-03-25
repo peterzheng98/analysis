@@ -5,6 +5,8 @@
 #ifndef ANALYSIS_BASEEVENT_H
 #define ANALYSIS_BASEEVENT_H
 
+#include <string>
+
 class BaseEvent{
 private:
     unsigned long pc = 0;
@@ -20,11 +22,12 @@ public:
     void setEventType(int eventType);
     BaseEvent(unsigned long pc, int thread_identifier);
     BaseEvent(unsigned long pc, int threadIdentifier, int eventType);
+    std::string getPcHex() const;
     virtual ~BaseEvent();
 };
 
 typedef enum Consistency{
-    Relaxed, Consume, Acquire, Release, Acq_rel, Seq_cst
+    NoConsistency = -1, Relaxed, Consume, Acquire, Release, Acq_rel, Seq_cst
 } ConsistencyType;
 
 #endif//ANALYSIS_BASEEVENT_H

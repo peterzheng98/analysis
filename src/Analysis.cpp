@@ -50,7 +50,7 @@ AnalysisReport::AnalysisReport(const std::string &filename) : filename(filename)
                 int thr, consistency;
                 unsigned long pc, address;
                 analysis >> thr >> pc >> address >> consistency;
-                auto *ptr = new AtomicEvent(pc, thr, address, consistency);
+                auto *ptr = new AtomicEvent(pc, thr, address, (ConsistencyType)consistency);
                 event_thread_map[thr].push_back(ptr);
                 std::cerr << std::endl;
                 break;
@@ -66,6 +66,17 @@ AnalysisReport::AnalysisReport(const std::string &filename) : filename(filename)
         }
         return sum;
     }() << "\n";
+}
+
+long AnalysisReport::_calculateRealDistance(const std::vector<BaseEvent*> &thr, const int &end_idx, const int &first_idx) {
+    long pc_distance = 0;
+    for(int idx = first_idx; idx < end_idx; ++idx){
+        pc_distance += calculateDistance(thr[idx + 1], thr[idx]);
+    }
+    for(int idx = first_idx; idx < end_idx; ++idx){
+        if(thr[idx + 1]->getEventType() == CONST_THREAD_BLOCK && thr[idx]->getEventType() == CONST_THREAD_BRANCH) pc_distance -= calculateDistance(thr[idx + 1], thr[idx]);
+    }
+    return pc_distance;
 }
 
 void AnalysisReport::buildGraph() {
@@ -91,22 +102,39 @@ void AnalysisReport::buildGraph() {
 
     std::cerr << getTimeString() << "jump_list: " << jump_list.size() << std::endl;
     for(auto &iter_begin: event_thread_map){
-        int total_size = iter_begin.second.size();
-        int i = 0;
-        while(iter_begin.second[i]->getEventType() != CONST_MEM_ACCESS) i++;
-        for(; i < total_size - 1; ++i){
-            int next_target = i + 1;
-            while(iter_begin.second[next_target]->getEventType() != CONST_MEM_ACCESS) next_target++;
-            if(iter_begin.second[next_target]->getEventType() == CONST_MEM_ACCESS){
-                std::cerr << getTimeString() << "Distance: " << calculateDistance(iter_begin.second[next_target], iter_begin.second[i]) << " insts is "
-                          << (dynamic_cast<MemoryAccessEvent*>(iter_begin.second[i]))->getAddress() << " "
-                          << (dynamic_cast<MemoryAccessEvent*>(iter_begin.second[next_target]))->getAddress() << std::endl;
-                i = next_target;
-                continue;
+        // pass: merge the atomic and its corresponding memory access
+        {
+            int terminate_size = iter_begin.second.size();
+            for(int i = 0; i < terminate_size; ++i){
+                if(iter_begin.second[i]->getEventType() == CONST_ATOMIC){
+                    assert(iter_begin.second[i + 1]->getEventType() == CONST_MEM_ACCESS);
+                    dynamic_cast<MemoryAccessEvent*>(iter_begin.second[i + 1])->setMemoryConsistencyLevel(dynamic_cast<AtomicEvent*>(iter_begin.second[i])->getMemoryConsistencyLevel());
+                    iter_begin.second.erase(iter_begin.second.begin() + i);
+                    terminate_size--;
+                }
             }
-
-//            int pc_distance =
-
+        }
+        // pass: find the length of memory access;
+        {
+            int total_size = iter_begin.second.size();
+            int i = 0;
+            while (iter_begin.second[i]->getEventType() != CONST_MEM_ACCESS) i++;
+            for (; i < total_size - 1; ++i) {
+                int next_target = i + 1;
+                long pc_distance = 0;
+                bool inside_jump = false;
+                int prev_target = i;
+                while (next_target < total_size && iter_begin.second[next_target]->getEventType() != CONST_MEM_ACCESS) next_target++;
+                if (next_target >= total_size) break;
+                pc_distance = _calculateRealDistance(iter_begin.second, next_target, i);
+                if (iter_begin.second[next_target]->getEventType() == CONST_MEM_ACCESS) {
+                    std::cerr << getTimeString() << "Distance on thread " << iter_begin.first << ": " << pc_distance << " insts is "
+                              << (dynamic_cast<MemoryAccessEvent *>(iter_begin.second[i]))->getPcHex() << " "
+                              << (dynamic_cast<MemoryAccessEvent *>(iter_begin.second[next_target]))->getPcHex() << std::endl;
+                    i = next_target;
+                    continue;
+                }
+            }
         }
     }
 }

@@ -18,6 +18,8 @@ private:
     std::vector<unsigned long> pc_list;
     std::vector<std::pair<unsigned long, unsigned long>> jump_list;
 
+    long _calculateRealDistance(const std::vector<BaseEvent*> &thr, const int& end_idx, const int& first_idx);
+
 public:
     AnalysisReport(const std::string& filename);
     void buildGraph();

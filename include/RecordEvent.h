@@ -7,12 +7,15 @@
 
 #include <Constant.h>
 #include <BaseEvent.h>
+#include <string>
+
 
 class MemoryAccessEvent : public BaseEvent{
 private:
     int access_size;
     unsigned long address;
     bool isWrite, isAtomic;
+    ConsistencyType memory_consistency_level = NoConsistency;
 
 public:
     MemoryAccessEvent(unsigned long pc, int threadIdentifier, int accessSize, unsigned long address, int flag);
@@ -24,6 +27,9 @@ public:
     void setIsWrite(bool isWrite);
     bool isAtomic1() const;
     void setIsAtomic(bool isAtomic);
+    std::string getAddressHex() const;
+    ConsistencyType getMemoryConsistencyLevel() const;
+    void setMemoryConsistencyLevel(ConsistencyType memoryConsistencyLevel);
 };
 
 class ThreadBlockEvent : public BaseEvent{
@@ -45,10 +51,12 @@ class AtomicEvent : public BaseEvent{
 private:
     unsigned long address;
     BaseEvent* related_memory_event;
-    ConsistencyType memory_consistency_level;
+    ConsistencyType memory_consistency_level = ConsistencyType::NoConsistency;
 
 public:
     BaseEvent *getRelatedMemoryEvent() const;
+    ConsistencyType getMemoryConsistencyLevel() const;
+    void setMemoryConsistencyLevel(ConsistencyType memoryConsistencyLevel);
     void setRelatedMemoryEvent(BaseEvent *relatedMemoryEvent);
     AtomicEvent(unsigned long pc, int threadIdentifier, unsigned long address, int memoryConsistencyLevel);
 

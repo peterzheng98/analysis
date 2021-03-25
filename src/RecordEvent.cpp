@@ -3,7 +3,7 @@
 //
 
 #include <RecordEvent.h>
-
+#include <sstream>
 AtomicEvent::AtomicEvent(unsigned long pc, int threadIdentifier, unsigned long address, BaseEvent *relatedMemoryEvent, int memoryConsistencyLevel) : BaseEvent(pc, threadIdentifier), address(address), related_memory_event(relatedMemoryEvent), memory_consistency_level((ConsistencyType) memoryConsistencyLevel) {
     setEventType(CONST_ATOMIC);
 }
@@ -14,6 +14,12 @@ void AtomicEvent::setRelatedMemoryEvent(BaseEvent *relatedMemoryEvent) {
     related_memory_event = relatedMemoryEvent;
 }
 AtomicEvent::AtomicEvent(unsigned long pc, int threadIdentifier, unsigned long address, int memoryConsistencyLevel) : BaseEvent(pc, threadIdentifier, CONST_ATOMIC), address(address), memory_consistency_level((ConsistencyType)memoryConsistencyLevel) {}
+ConsistencyType AtomicEvent::getMemoryConsistencyLevel() const {
+    return memory_consistency_level;
+}
+void AtomicEvent::setMemoryConsistencyLevel(ConsistencyType memoryConsistencyLevel) {
+    memory_consistency_level = memoryConsistencyLevel;
+}
 
 ThreadBranchEvent::ThreadBranchEvent(unsigned long pc, int threadIdentifier, int branchCondition) : BaseEvent(pc, threadIdentifier, CONST_THREAD_BRANCH), branch_condition(branchCondition) {
     setEventType(CONST_THREAD_BRANCH);
@@ -37,6 +43,12 @@ void MemoryAccessEvent::setAccessSize(int accessSize) {
 unsigned long MemoryAccessEvent::getAddress() const {
     return address;
 }
+std::string MemoryAccessEvent::getAddressHex() const {
+    std::stringstream stream;
+    stream << std::hex << "0x" << this->address;
+    std::string result( stream.str() );
+    return result;
+}
 void MemoryAccessEvent::setAddress(unsigned long address) {
     MemoryAccessEvent::address = address;
 }
@@ -51,4 +63,10 @@ bool MemoryAccessEvent::isAtomic1() const {
 }
 void MemoryAccessEvent::setIsAtomic(bool isAtomic) {
     MemoryAccessEvent::isAtomic = isAtomic;
+}
+ConsistencyType MemoryAccessEvent::getMemoryConsistencyLevel() const {
+    return memory_consistency_level;
+}
+void MemoryAccessEvent::setMemoryConsistencyLevel(ConsistencyType memoryConsistencyLevel) {
+    memory_consistency_level = memoryConsistencyLevel;
 }
