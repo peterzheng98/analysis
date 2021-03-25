@@ -1,0 +1,1 @@
+add_library(project-src OBJECT Analysis.cpp BaseEvent.cpp RecordEvent.cpp)
